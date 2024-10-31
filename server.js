@@ -1,6 +1,8 @@
 import express from 'express';
 import CnxMongoDB from './model/DBMongo.js';
 import RouterProductos from './router/productos.js'; 
+import RouterPedidos from './router/pedidos.js'; 
+import RouterEstadisticas from './router/estadisticas.js'
 import morgan from 'morgan';
 import cors from 'cors';
 import path from 'path';
@@ -35,7 +37,10 @@ class Server {
       res.json({ message: 'Hola mundo' });
     });
 
+    this.app.use('/api/estadisticas', new RouterEstadisticas(this.persistencia).start());
+    this.app.use('/api/pedidos', new RouterPedidos(this.persistencia).start());
     this.app.use('/api/productos', new RouterProductos(this.persistencia).start());
+    
 
     // Manejo de rutas no encontradas
     this.app.use((req, res) => {
