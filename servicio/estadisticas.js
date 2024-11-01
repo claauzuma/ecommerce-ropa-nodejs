@@ -61,10 +61,17 @@ class ServicioEstadisticas {
             // Filtrar solo si se proporciona al menos un parámetro
             if (mes || dia || año) {
                 let estadisticasFiltradas = estadisticasTotales.filter(est => {
-                    const fechaEstadistica = new Date(est.fecha);
-                    const mesEstadistica = fechaEstadistica.getMonth() + 1; // Obtener el mes (1-12)
-                    const diaEstadistica = fechaEstadistica.getDate(); // Obtener el día (1-31)
-                    const añoEstadistica = fechaEstadistica.getFullYear(); // Obtener el año
+                    const fechaEstadistica = new Date(est.fecha + 'T00:00:00Z');
+                    const mesEstadistica = fechaEstadistica.getUTCMonth() + 1; // Obtener el mes (1-12)
+                    console.log("La estadistica completa es " , est)
+                    console.log("La fecha de la estadistica es " + fechaEstadistica)
+                    console.log("La fecha de la estadistica es " + est.fecha)
+                    console.log("Sus visitas son " + est.visitas)
+                    console.log("El mes de la estadistica es " + mesEstadistica )
+                    console.log("El mes que le estoy pasando es " + mes )
+
+                    const diaEstadistica = fechaEstadistica.getUTCDate(); // Obtener el día (1-31)
+                    const añoEstadistica = fechaEstadistica.getUTCFullYear(); // Obtener el año
     
                     console.log("Mes del objeto en array " + mesEstadistica);
                     console.log("Dia del objeto en array " + diaEstadistica);
