@@ -44,13 +44,21 @@ class ControladorEstadisticas {
     // Obtener todas las estadísticas
     obtenerEstadisticas = async (req, res) => {
         try {
-            const estadisticas = await this.servicio.obtenerEstadisticas();
+            const { mes, dia, anio } = req.query; // Extraer mes, dia y anio de los parámetros de consulta
+            console.log("(Controlador) EL MES SELECCIONADO ES " + mes);
+            console.log("(Controlador) EL DÍA SELECCIONADO ES " + dia);
+            console.log("(Controlador) EL AÑO SELECCIONADO ES " + anio);
+    
+            // Llamar al servicio y pasar los parámetros obtenidos
+            const estadisticas = await this.servicio.obtenerEstadisticas(mes, dia, anio);
+    
             res.json(estadisticas);
         } catch (error) {
             console.error('Error al obtener estadísticas:', error);
             res.status(500).json({ message: 'Error al obtener las estadísticas' });
         }
     };
+    
 
     // Obtener estadísticas por tipo
     obtenerEstadisticasPorTipo = async (req, res) => {

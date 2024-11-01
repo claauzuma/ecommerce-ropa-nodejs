@@ -30,44 +30,41 @@ class ControladorProductos {
 
     agregarProducto = async (req, res) => {
         try {
-            console.log("Vamos a intentar agregar el producto" )
+            console.log("Vamos a intentar agregar el producto");
             if (!req.body) {
                 return res.status(400).json({ message: 'Error: no se recibieron datos del producto.' });
             }
-
-            const { descripcion, categoria, price, stock } = req.body;
+    
+            const { descripcion, categoria } = req.body;
+            const price = parseFloat(req.body.price);
+            const stock = parseInt(req.body.stock);
             const image = req.file; // La imagen subida con multer
-
-            console.log( "Vemos los valores " + descripcion + categoria + price + stock + image )
-
+    
+            console.log("Vemos los valores " + descripcion + categoria + price + stock + image);
+    
             // Validar los datos del producto
             const validacion = validar(descripcion, categoria, price, image, stock, 'Y');
-
-
+    
             if (validacion.length === 0) {
                 let imagenUrl = null;
-
-          
+    
                 if (image) {
-        
-                    const resultadoSubida = await cloudinary.v2.uploader.upload(image.path); 
+                    const resultadoSubida = await cloudinary.v2.uploader.upload(image.path);
                     imagenUrl = resultadoSubida.secure_url;
                 }
-
-         
-                const nuevoProducto = {                    descripcion,
+    
+                const nuevoProducto = {
+                    descripcion,
                     categoria,
-                    image: imagenUrl, 
+                    image: imagenUrl,
                     price,
                     stock,
                 };
- 
- 0         
+    
                 const productoAgregado = await this.servicio.agregarProducto(nuevoProducto);
-
+    
                 return res.status(200).json({ status: true, message: 'Producto guardado correctamente.', producto: productoAgregado });
             } else {
-        
                 return res.status(400).json({ status: false, errors: validacion });
             }
         } catch (error) {
@@ -75,31 +72,32 @@ class ControladorProductos {
             res.status(500).json({ error: 'Error al crear el producto' });
         }
     };
-
-
+    
     modificarProducto = async (req, res) => {
         try {
-            console.log("Vamos a modificar el producto")
-            const { id } = req.params; 
+            console.log("Vamos a modificar el producto");
+            const { id } = req.params;
             const productoModificadoData = req.body;
-            const image = req.file; // 
+            const image = req.file;
     
             if (productoModificadoData._id) {
                 delete productoModificadoData._id;
             }
-
+    
             if (image) {
-                const resultadoSubida = await cloudinary.v2.uploader.upload(image.path); 
-                productoModificadoData.image = resultadoSubida.secure_url; 
+                const resultadoSubida = await cloudinary.v2.uploader.upload(image.path);
+                productoModificadoData.image = resultadoSubida.secure_url;
             }
     
-  
+            productoModificadoData.price = parseFloat(productoModificadoData.price);
+            productoModificadoData.stock = parseInt(productoModificadoData.stock);
+    
             const validacion = validar(
-                productoModificadoData.descripcion, 
-                productoModificadoData.categoria, 
-                productoModificadoData.price, 
-                productoModificadoData.image, 
-                productoModificadoData.stock, 
+                productoModificadoData.descripcion,
+                productoModificadoData.categoria,
+                productoModificadoData.price,
+                productoModificadoData.image,
+                productoModificadoData.stock,
                 'N'
             );
     
@@ -107,7 +105,6 @@ class ControladorProductos {
                 return res.status(400).json({ status: false, errors: validacion });
             }
     
-
             const productoModificado = await this.servicio.modificarProducto(id, productoModificadoData);
     
             if (!productoModificado) {
@@ -120,6 +117,7 @@ class ControladorProductos {
             res.status(500).json({ error: 'Error al modificar el producto' });
         }
     };
+    
 
 
     borrarProducto = async (req, res) => {
