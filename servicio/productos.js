@@ -5,19 +5,21 @@ class ServicioProductos {
         this.model = ModelFactory.get(persistencia);
     }
 
-    // Obtener productos (por ID o todos)
     obtenerProductos = async id => {
         const productos = await this.model.obtenerProductos(id);
         return productos;
     };
 
-    // Agregar un nuevo producto
     agregarProducto = async producto => {
-        const productoAgregado = await this.model.guardarProducto(producto);
-        return productoAgregado;
+        try {
+            const productoAgregado = await this.model.guardarProducto(producto);
+            return productoAgregado; 
+        } catch (error) {
+            console.error('Error al agregar el producto:', error);
+            throw new Error('No se pudo agregar el producto'); 
+        }
     };
 
-    // Modificar un producto por ID
     modificarProducto = async (id, producto) => {
         const productoModificado = await this.model.actualizarProducto(id, producto);
         return productoModificado;

@@ -19,8 +19,8 @@ class RouterProductos {
  
         this.router.get('/', this.controladorProductos.obtenerProductos);
         this.router.get('/:id', this.controladorProductos.obtenerProductos);
-        this.router.post('/', subirImagen.single('image'), this.controladorProductos.agregarProducto);
-        this.router.put('/:id', subirImagen.single('image'), this.controladorProductos.modificarProducto);
+        this.router.post('/', subirImagen, this.controladorProductos.agregarProducto); // Aquí solo se llama a subirImagen, ya no .array()
+       // this.router.put('/:id', subirImagen.single('image'), this.controladorProductos.modificarProducto);
         this.router.delete('/:id', this.controladorProductos.borrarProducto);
 
         return this.router

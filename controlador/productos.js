@@ -28,39 +28,66 @@ class ControladorProductos {
         }
     };
 
+
+
     agregarProducto = async (req, res) => {
         try {
             console.log("Vamos a intentar agregar el producto");
-            if (!req.body) {
-                return res.status(400).json({ message: 'Error: no se recibieron datos del producto.' });
+    
+            if (!req.body || !req.files) {
+                return res.status(400).json({ message: 'Error: no se recibieron datos del producto o imágenes.' });
             }
     
-            const { descripcion, categoria } = req.body;
-            const price = parseFloat(req.body.price);
-            const stock = parseInt(req.body.stock);
-            const image = req.file; // La imagen subida con multer
+            const { descripcion, categoria, tallesInputs, nombre } = req.body;
+            const price = parseFloat(req.body.price); // Asegurarse de que price es un número
+            const images = req.files; // Array de imágenes subidas con multer
+            console.log("A ver las imagenes che")
+            console.log(images)
     
-            console.log("Vemos los valores " + descripcion + categoria + price + stock + image);
+            console.log("Vemos los valores " + nombre + descripcion + categoria + price + tallesInputs + images);
     
             // Validar los datos del producto
-            const validacion = validar(descripcion, categoria, price, image, stock, 'Y');
-    
+            const validacion = validar(nombre + descripcion, categoria, price, images, tallesInputs, 'Y');
+            
+            // Si la validación es correcta (sin errores)
             if (validacion.length === 0) {
-                let imagenUrl = null;
+                let imagenesUrls = []; // Asegúrate de inicializar la variable aquí
     
-                if (image) {
-                    const resultadoSubida = await cloudinary.v2.uploader.upload(image.path);
-                    imagenUrl = resultadoSubida.secure_url;
+                if (images && images.length > 0) {
+                    for (const image of images) {
+                        try {
+                            let resultadoSubida;
+                            if (image.mimetype.startsWith('video/')) {
+                                // Manejar subida de video
+                                const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
+                                if (image.size > MAX_VIDEO_SIZE) {
+                                    return res.status(400).json({ message: 'El video es demasiado grande. El tamaño máximo permitido es de 50 MB.' });
+                                }
+                                resultadoSubida = await cloudinary.v2.uploader.upload(image.path, { resource_type: "video" });
+                            } else {
+                                // Manejar subida de imagen
+                                resultadoSubida = await cloudinary.v2.uploader.upload(image.path);
+                            }
+                            imagenesUrls.push(resultadoSubida.secure_url);
+                        } catch (uploadError) {
+                            console.error('Error al subir archivo:', uploadError);
+                            return res.status(500).json({ message: 'Error al subir uno de los archivos.' });
+                        }
+                    }
                 }
     
+                // Crear el nuevo producto con las imágenes subidas
                 const nuevoProducto = {
+                    nombre,
                     descripcion,
                     categoria,
-                    image: imagenUrl,
-                    price,
-                    stock,
+                    images: imagenesUrls, // Guarda el array de URLs de imágenes
+                    talles: tallesInputs, // Array de objetos con talles y colores, y stock por cada combinación
+                    price
                 };
+                console.log(nuevoProducto);
     
+                // Agregar el producto a la base de datos
                 const productoAgregado = await this.servicio.agregarProducto(nuevoProducto);
     
                 return res.status(200).json({ status: true, message: 'Producto guardado correctamente.', producto: productoAgregado });
@@ -69,9 +96,10 @@ class ControladorProductos {
             }
         } catch (error) {
             console.error('Error al agregar producto:', error);
-            res.status(500).json({ error: 'Error al crear el producto' });
+            return res.status(500).json({ error: 'Error al crear el producto' });
         }
     };
+    
     
     modificarProducto = async (req, res) => {
         try {
@@ -146,7 +174,7 @@ const eliminarImagenSiError = (imagen) => {
     }
 };
 
-const validar = (descripcion, categoria, price, image, stock, seValida) => {
+const validar = (descripcion, categoria, price, images, seValida) => {
     let errors = [];
 
     // Validar descripción
@@ -164,21 +192,23 @@ const validar = (descripcion, categoria, price, image, stock, seValida) => {
         errors.push('El precio debe ser un número positivo');
     }
 
-    // Validar stock
-    if (stock === undefined || isNaN(stock) || stock < 0) {
-        errors.push('El stock no debe estar vacío y debe ser un número positivo');
-    }
-
-    // Validar imagen solo si se requiere (seValida = 'Y')
+    // Validar imágenes solo si se requiere (seValida = 'Y')
     if (seValida === 'Y') {
-        if (!image) {
-            errors.push('Selecciona una imagen en formato jpg o png');
-        } else if (!['image/jpeg', 'image/png'].includes(image.mimetype)) { // Cambiar a `image.mimetype`
-            errors.push('La imagen debe estar en formato jpg o png');
+        if (!images || images.length === 0) {
+            errors.push('Selecciona al menos una imagen o video en formato jpg, png o mp4');
+        } else {
+            // Validar cada imagen o video
+            images.forEach(image => {
+                if (!['image/jpeg', 'image/png', 'video/mp4'].includes(image.mimetype)) {
+                    errors.push('Las imágenes deben estar en formato jpg o png, y los videos en formato mp4');
+                }
+            });
         }
     }
 
     return errors;
 };
+
+
 
 export default ControladorProductos;
