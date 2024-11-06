@@ -82,7 +82,7 @@ class ControladorProductos {
                     descripcion,
                     categoria,
                     images: imagenesUrls, // Guarda el array de URLs de imágenes
-                    talles: tallesInputs, // Array de objetos con talles y colores, y stock por cada combinación
+                    talles: JSON.parse(tallesInputs), // Asegúrate de convertir a objeto
                     price
                 };
                 console.log(nuevoProducto);
