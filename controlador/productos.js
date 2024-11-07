@@ -103,50 +103,108 @@ class ControladorProductos {
     
     modificarProducto = async (req, res) => {
         try {
-            console.log("Vamos a modificar el producto");
+            console.log("Intentando modificar el producto");
+    
+            // Verificación de que recibimos datos
+            if (!req.body || !req.files) {
+                return res.status(400).json({ message: 'Error: no se recibieron datos del producto o imágenes.' });
+            }
+    
+            const { descripcion, categoria, tallesInputs, nombre } = req.body;
             const { id } = req.params;
-            const productoModificadoData = req.body;
-            const image = req.file;
+            const price = parseFloat(req.body.price); // Asegúrate de que price es un número
+            const newImages = req.files; // Nuevas imágenes subidas con multer
     
-            if (productoModificadoData._id) {
-                delete productoModificadoData._id;
+            // Validación de los datos
+            const validacion = validar(nombre + descripcion, categoria, price, 'Y');
+            
+            if (validacion.length === 0) {
+                let imagenesUrls = [];  // Aquí se almacenarán las URLs de las imágenes
+    
+                // Si ya tienes imágenes previas en la base de datos, las deberías obtener de algún lugar
+                // Ejemplo: const imagenesExistentes = productoAnterior.images || [];
+    
+                // Manejar las nuevas imágenes: 
+                if (newImages && newImages.length > 0) {
+                    for (const image of newImages) {
+                        try {
+                            let resultadoSubida;
+                            if (image.mimetype.startsWith('video/')) {
+                                const MAX_VIDEO_SIZE = 50 * 1024 * 1024; // 50 MB
+                                if (image.size > MAX_VIDEO_SIZE) {
+                                    return res.status(400).json({ message: 'El video es demasiado grande. El tamaño máximo permitido es de 50 MB.' });
+                                }
+                                resultadoSubida = await cloudinary.v2.uploader.upload(image.path, { resource_type: "video" });
+                            } else {
+                                console.log("VAMOS A SUBIR LA IMAGENN DE MULTER A CLOUDINARY" , newImages)
+                                resultadoSubida = await cloudinary.v2.uploader.upload(image.path);
+                                console.log("El url es " + resultadoSubida.secure_url);  // Esto debería imprimir correctamente la URL.
+
+                                
+                            }
+                            console.log("Pusheamos la url al array..............................")
+                            imagenesUrls.push(resultadoSubida.secure_url); // Añadimos la URL de la imagen al array
+                            
+                        } catch (uploadError) {
+                            console.error('Error al subir archivo:', uploadError);
+                            return res.status(500).json({ message: 'Error al subir uno de los archivos.' });
+                        }
+                    }
+                }
+
+                console.log("LAS URL QUE HAY POR EL MOMENTO SON " , imagenesUrls)
+
+
+            console.log("Tipo de req.body.images: " + typeof req.body.images);
+            console.log("Contenido de req.body.images: ", req.body.images);
+    
+                // Aquí manejamos las URLs que ya fueron pasadas como cadenas de texto
+if (req.body.images) {
+    // Si req.body.images es un string, lo convertimos en un array
+    if (typeof req.body.images === 'string') {
+        req.body.images = [req.body.images]; // Convertimos la URL en un array
+    }
+    
+    // Ahora verificamos si es un array y procesamos las imágenes
+    if (Array.isArray(req.body.images)) {
+        console.log("AL MENOS UNA URL HAY");
+        req.body.images.forEach(image => {
+            if (typeof image === 'string') {
+                console.log("UNA URL ES: " + image);
+                imagenesUrls.push(image);
             }
+        });
+    }
+}
+
+                console.log("VAMOS A IMPRIMIR TODAS LAS IMAGENES URLSSSSS" , imagenesUrls)
     
-            if (image) {
-                const resultadoSubida = await cloudinary.v2.uploader.upload(image.path);
-                productoModificadoData.image = resultadoSubida.secure_url;
-            }
+                // Crear el objeto del producto con los datos actualizados
+                const productoModificado = {
+                    nombre,
+                    descripcion,
+                    categoria,
+                    images: imagenesUrls, // Array actualizado de URLs de imágenes
+                    talles: JSON.parse(tallesInputs), // Convertir talles a objeto
+                    price
+                };
+                console.log("Producto modificado:", productoModificado);
     
-            productoModificadoData.price = parseFloat(productoModificadoData.price);
-            productoModificadoData.stock = parseInt(productoModificadoData.stock);
+                // Actualizar el producto en la base de datos
+                const productoActualizado = await this.servicio.modificarProducto(id, productoModificado);
     
-            const validacion = validar(
-                productoModificadoData.descripcion,
-                productoModificadoData.categoria,
-                productoModificadoData.price,
-                productoModificadoData.image,
-                productoModificadoData.stock,
-                'N'
-            );
-    
-            if (validacion.length > 0) {
+                return res.status(200).json({ status: true, message: 'Producto modificado correctamente.', producto: productoActualizado });
+            } else {
                 return res.status(400).json({ status: false, errors: validacion });
             }
-    
-            const productoModificado = await this.servicio.modificarProducto(id, productoModificadoData);
-    
-            if (!productoModificado) {
-                return res.status(404).json({ message: 'Producto no encontrado' });
-            }
-    
-            res.json({ status: true, message: 'Producto modificado correctamente.', producto: productoModificado });
         } catch (error) {
             console.error('Error al modificar producto:', error);
-            res.status(500).json({ error: 'Error al modificar el producto' });
+            return res.status(500).json({ error: 'Error al modificar el producto' });
         }
     };
     
-
+    
+    
 
     borrarProducto = async (req, res) => {
         try {
