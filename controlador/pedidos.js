@@ -40,6 +40,7 @@ class ControladorPedidos {
                     estado,
                     fechaCreacion,
                     horaCreacion,
+                    
            
                     
                 };
