@@ -5,10 +5,12 @@ class ServicioProductos {
         this.model = ModelFactory.get(persistencia);
     }
 
+
     obtenerProductos = async id => {
         const productos = await this.model.obtenerProductos(id);
         return productos;
     };
+
 
     agregarProducto = async producto => {
         try {
@@ -20,8 +22,11 @@ class ServicioProductos {
         }
     };
 
+
     modificarProducto = async (id, producto) => {
+        console.log("Aca modificamos el producto")
         const productoModificado = await this.model.actualizarProducto(id, producto);
+        console.log("Se modifico el producto " ,productoModificado)
         return productoModificado;
     };
 

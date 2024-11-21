@@ -3,6 +3,7 @@ import CnxMongoDB from './model/DBMongo.js';
 import RouterProductos from './router/productos.js'; 
 import RouterPedidos from './router/pedidos.js'; 
 import RouterEstadisticas from './router/estadisticas.js'
+import RouterUsuarios from './router/usuarios.js'
 import morgan from 'morgan';
 import cors from 'cors';
 import path from 'path';
@@ -40,6 +41,7 @@ class Server {
     this.app.use('/api/estadisticas', new RouterEstadisticas(this.persistencia).start());
     this.app.use('/api/pedidos', new RouterPedidos(this.persistencia).start());
     this.app.use('/api/productos', new RouterProductos(this.persistencia).start());
+    this.app.use('/api/usuarios', new RouterUsuarios(this.persistencia).start());
     
 
     // Manejo de rutas no encontradas

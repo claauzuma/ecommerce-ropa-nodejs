@@ -59,6 +59,7 @@ class ControladorPedidos {
 
     // Modificar un pedido
     modificarPedido = async (req, res) => {
+        console.log("Vamos a modificar el pedido")
         try {
             const { id } = req.params;
             const pedidoModificadoData = req.body;

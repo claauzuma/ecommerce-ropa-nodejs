@@ -38,7 +38,16 @@ class ControladorProductos {
                 return res.status(400).json({ message: 'Error: no se recibieron datos del producto o imágenes.' });
             }
     
-            const { descripcion, categoria, tallesInputs, nombre } = req.body;
+            let { descripcion, categoria, tallesInputs, nombre, promo } = req.body;
+            promo = promo === undefined ? false : promo;
+            
+            if(promo == "true") {
+                promo = true
+            } 
+            if(promo =="false") {
+                promo = false
+            }
+
             const price = parseFloat(req.body.price); // Asegurarse de que price es un número
             const images = req.files; // Array de imágenes subidas con multer
             console.log("A ver las imagenes che")
@@ -83,7 +92,9 @@ class ControladorProductos {
                     categoria,
                     images: imagenesUrls, // Guarda el array de URLs de imágenes
                     talles: JSON.parse(tallesInputs), // Asegúrate de convertir a objeto
-                    price
+                    price,
+                    beforePrice : price,
+                    promo
                 };
                 console.log(nuevoProducto);
     
@@ -104,16 +115,28 @@ class ControladorProductos {
     modificarProducto = async (req, res) => {
         try {
             console.log("Intentando modificar el producto");
+
+
     
             // Verificación de que recibimos datos
             if (!req.body || !req.files) {
                 return res.status(400).json({ message: 'Error: no se recibieron datos del producto o imágenes.' });
             }
+
+
+
     
             const { descripcion, categoria, tallesInputs, nombre } = req.body;
             const { id } = req.params;
             const price = parseFloat(req.body.price); // Asegúrate de que price es un número
             const newImages = req.files; // Nuevas imágenes subidas con multer
+ 
+            console.log("El id es " + id)
+            let productos = await this.servicio.obtenerProductos()
+            console.log(productos[0])
+            let productoBuscado = productos.find(producto => producto._id == id);
+            let precioAnterior = productoBuscado.price;
+
     
             // Validación de los datos
             const validacion = validar(nombre + descripcion, categoria, price, 'Y');
@@ -186,7 +209,8 @@ if (req.body.images) {
                     categoria,
                     images: imagenesUrls, // Array actualizado de URLs de imágenes
                     talles: JSON.parse(tallesInputs), // Convertir talles a objeto
-                    price
+                    price,
+                    beforePrice: precioAnterior
                 };
                 console.log("Producto modificado:", productoModificado);
     
