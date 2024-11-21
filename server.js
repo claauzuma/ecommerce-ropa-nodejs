@@ -23,7 +23,7 @@ class Server {
 
     // Middleware
     this.app.use(cors({
-      origin: 'http://localhost:5173',
+      origin:  'https://ecommerce-ropa-nodejs-production.up.railway.app', 
       methods: 'GET, POST, PUT, DELETE, OPTIONS',
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,

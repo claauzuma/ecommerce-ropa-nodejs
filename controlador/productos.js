@@ -40,7 +40,7 @@ class ControladorProductos {
     
             let { descripcion, categoria, tallesInputs, nombre, promo } = req.body;
             promo = promo === undefined ? false : promo;
-            
+
             if(promo == "true") {
                 promo = true
             } 
@@ -126,7 +126,14 @@ class ControladorProductos {
 
 
     
-            const { descripcion, categoria, tallesInputs, nombre } = req.body;
+            let { descripcion, categoria, tallesInputs, nombre, promo } = req.body;
+
+            if(promo == "true") {
+                promo = true
+            } else {
+                promo = false
+            }
+            console.log("Imprimimos la promo", promo)
             const { id } = req.params;
             const price = parseFloat(req.body.price); // Asegúrate de que price es un número
             const newImages = req.files; // Nuevas imágenes subidas con multer
@@ -136,8 +143,6 @@ class ControladorProductos {
             console.log(productos[0])
             let productoBuscado = productos.find(producto => producto._id == id);
             let precioAnterior = productoBuscado.price;
-
-    
             // Validación de los datos
             const validacion = validar(nombre + descripcion, categoria, price, 'Y');
             
@@ -210,7 +215,8 @@ if (req.body.images) {
                     images: imagenesUrls, // Array actualizado de URLs de imágenes
                     talles: JSON.parse(tallesInputs), // Convertir talles a objeto
                     price,
-                    beforePrice: precioAnterior
+                    beforePrice: precioAnterior,
+                    promo
                 };
                 console.log("Producto modificado:", productoModificado);
     
