@@ -23,7 +23,7 @@ class Server {
 
     // Middleware
     this.app.use(cors({
-      origin:  'https://ecommerce-ropa-nodejs-production.up.railway.app', 
+      origin:  'https://capable-cat-98c74c.netlify.app',
       methods: 'GET, POST, PUT, DELETE, OPTIONS',
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
