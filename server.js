@@ -21,9 +21,22 @@ class Server {
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
 
-    // Middleware
+    const allowedOrigins = [
+      'http://localhost:5173',
+      'https://ecommerce-ropa-nodejs-production.up.railway.app',
+      'https://capable-cat-98c74c.netlify.app',
+      'https://ecommerce-ropa-01-eztc.vercel.app/'
+      
+    ];
+    
     this.app.use(cors({
-      origin:  'https://capable-cat-98c74c.netlify.app',
+      origin: function(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);  // Permite el acceso si está en la lista
+        } else {
+          callback(new Error('Not allowed by CORS'));  // Bloquea otros dominios
+        }
+      },
       methods: 'GET, POST, PUT, DELETE, OPTIONS',
       allowedHeaders: ['Content-Type', 'Authorization'],
       credentials: true,
