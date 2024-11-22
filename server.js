@@ -25,7 +25,7 @@ class Server {
       'http://localhost:5173',
       'https://ecommerce-ropa-nodejs-production.up.railway.app',
       'https://capable-cat-98c74c.netlify.app',
-      'https://ecommerce-ropa-01-eztc.vercel.app/'
+      'https://ecommerce-ropa-01-eztc.vercel.app'
       
     ];
     
