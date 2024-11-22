@@ -17,32 +17,36 @@ class Server {
     this.server = null;
   }
 
-  async start() {
-    const __filename = fileURLToPath(import.meta.url);
-    const __dirname = path.dirname(__filename);
 
-    const allowedOrigins = [
-      'http://localhost:5173',
-      'https://ecommerce-ropa-nodejs-production.up.railway.app',
-      'https://capable-cat-98c74c.netlify.app',
-      'https://ecommerce-ropa-01-eztc.vercel.app'
-      
-    ];
-    
-    this.app.use(cors({
-      origin: function(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
-          callback(null, true);  // Permite el acceso si está en la lista
-        } else {
-          callback(new Error('Not allowed by CORS'));  // Bloquea otros dominios
-        }
-      },
-      methods: 'GET, POST, PUT, DELETE, OPTIONS',
-      allowedHeaders: ['Content-Type', 'Authorization'],
-      credentials: true,
-    }));
-    
+  async start() {
     this.app.use(express.json());
+
+    const corsOptions = {
+      origin: [
+        'https://ecommerce-ropa-01-eztc.vercel.app', // Frontend en Vercel
+        'https://localhost:5173'  // Frontend en local (si estás desarrollando localmente)
+      ],
+      methods: 'GET, POST, PUT, DELETE, OPTIONS',  // Métodos permitidos
+      allowedHeaders: ['Content-Type', 'Authorization'], // Encabezados permitidos
+      credentials: true  // Permitir cookies o autenticación
+    };
+    
+    // Habilitar CORS con la configuración personalizada
+    this.app.use(cors(corsOptions));
+    
+    this.app.use((req, res, next) => {
+      res.header('Access-Control-Allow-Origin', 'https://ecommerce-ropa-01-eztc.vercel.app');
+      res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+      res.header('Access-Control-Allow-Credentials', 'true');
+      
+      // Agrega esta condición para manejar el preflight request de CORS
+      if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+      }
+      next();
+    });
+   
     this.app.use(morgan('dev'));
     this.app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
     this.app.use(express.static('public'));
