@@ -28,6 +28,23 @@ class ControladorProductos {
         }
     };
 
+    agregarComentario = async (req, res) => {
+        try {
+            const { id } = req.params;
+            const { fecha, hora, nombre, email, comentario } = req.body;
+            if (!fecha || !hora || !nombre || !email || !comentario) {
+                return res.status(400).json({ error: 'Faltan datos para agregar el comentario' });
+            }
+            const productoActualizado = await this.servicio.agregarComentario(id, { fecha, hora, nombre, email, comentario });
+
+            res.json(productoActualizado);
+        } catch (error) {
+            console.error('Error al agregar comentario:', error);
+            res.status(500).json({ error: 'Error al agregar comentario' });
+        }
+    };
+    
+
 
 
     agregarProducto = async (req, res) => {
@@ -94,7 +111,9 @@ class ControladorProductos {
                     talles: JSON.parse(tallesInputs), // Asegúrate de convertir a objeto
                     price,
                     beforePrice : price,
-                    promo
+                    promo,
+                    comentarios : []
+
                 };
                 console.log(nuevoProducto);
     

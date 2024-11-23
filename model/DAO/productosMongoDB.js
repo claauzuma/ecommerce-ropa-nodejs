@@ -17,6 +17,21 @@ class ModelMongoDBProductos {
         }
     }
 
+    findById = async (id) => {
+        if (!CnxMongoDB.connection) {
+          throw new Error('No hay conexión a la base de datos');
+        }
+        
+        try {
+          const producto = await CnxMongoDB.db.collection('productos').findOne({ _id: new ObjectId(id) });
+          return producto;
+        } catch (error) {
+          console.error('Error al buscar producto por ID:', error);
+          throw new Error('No se pudo encontrar el producto');
+        }
+      };
+      
+
     // Guardar un nuevo producto
     guardarProducto = async (producto) => {
         if (!CnxMongoDB.connection) return {};
